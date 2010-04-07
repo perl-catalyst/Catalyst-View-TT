@@ -8,7 +8,7 @@ Catalyst::Helper::View::TT - Helper for TT Views
 
 =head1 SYNOPSIS
 
-    script/create.pl view TT TT
+    script/create.pl view HTML TT
 
 =head1 DESCRIPTION
 
@@ -55,7 +55,10 @@ use warnings;
 
 use base 'Catalyst::View::TT';
 
-__PACKAGE__->config(TEMPLATE_EXTENSION => '.tt');
+__PACKAGE__->config(
+    TEMPLATE_EXTENSION => '.tt',
+    render_die => 1,
+);
 
 =head1 NAME
 

@@ -8,8 +8,9 @@ use Data::Dump 'dump';
 use Template;
 use Template::Timer;
 use MRO::Compat;
+use Scalar::Util qw/blessed/;
 
-our $VERSION = '0.30';
+our $VERSION = '0.33';
 
 __PACKAGE__->mk_accessors('template');
 __PACKAGE__->mk_accessors('include_path');
@@ -28,9 +29,10 @@ Catalyst::View::TT - Template View Class
 
 # configure in lib/MyApp.pm (Could be set from configfile instead)
 
-    MyApp->config(
-        name     => 'MyApp',
-        root     => MyApp->path_to('root'),
+    __PACKAGE__->config(
+        name         => 'MyApp',
+        root         => MyApp->path_to('root'),
+        default_view => 'TT',
         'View::TT' => {
             # any TT configurations items go here
             INCLUDE_PATH => [
@@ -43,6 +45,7 @@ Catalyst::View::TT - Template View Class
             # Not set by default
             PRE_PROCESS        => 'config/main',
             WRAPPER            => 'site/wrapper',
+            render_die => 1, # Default for new apps, see render method docs
         },
     );
 
@@ -168,6 +171,7 @@ sub new {
                                    @{ $p->{copy_config} };
                     }
                 }
+                local $@;
                 eval "require $prov";
                 if(!$@) {
                     push @providers, "$prov"->new($p->{args});
@@ -207,13 +211,13 @@ sub process {
         return 0;
     }
 
-    my $output = $self->render($c, $template);
-
-    if (UNIVERSAL::isa($output, 'Template::Exception')) {
-        my $error = qq/Couldn't render template "$output"/;
-        $c->log->error($error);
-        $c->error($error);
-        return 0;
+    local $@;
+    my $output = eval { $self->render($c, $template) };
+    if (my $err = $@) {
+        return $self->_rendering_error($c, $err);
+    }
+    if (blessed($output) && $output->isa('Template::Exception')) {
+        $self->_rendering_error($c, $output);
     }
 
     unless ( $c->response->content_type ) {
@@ -225,10 +229,18 @@ sub process {
     return 1;
 }
 
+sub _rendering_error {
+    my ($self, $c, $err) = @_;
+    my $error = qq/Couldn't render template "$err"/;
+    $c->log->error($error);
+    $c->error($error);
+    return 0;
+}
+
 sub render {
     my ($self, $c, $template, $args) = @_;
 
-    $c->log->debug(qq/Rendering template "$template"/) if $c->debug;
+    $c->log->debug(qq/Rendering template "$template"/) if $c && $c->debug;
 
     my $output;
     my $vars = {
@@ -240,16 +252,21 @@ sub render {
         [ @{ $vars->{additional_template_paths} }, @{ $self->{include_path} } ]
         if ref $vars->{additional_template_paths};
 
-    unless ($self->template->process( $template, $vars, \$output ) ) {
+    unless ( $self->template->process( $template, $vars, \$output ) ) {
+        if (exists $self->{render_die}) {
+            die $self->template->error if $self->{render_die};
+            return $self->template->error;
+        }
+        $c->log->debug('The Catalyst::View::TT render() method of will die on error in a future release. Unless you are calling the render() method manually, you probably want the new behaviour, so set render_die => 1 in config for ' . blessed($self) . '. If you are calling the render() method manually and you wish it to continue to return the exception rather than throwing it, add render_die => 0 to your config.') if $c->debug;
         return $self->template->error;
-    } else {
-        return $output;
     }
+    return $output;
 }
 
 sub template_vars {
     my ( $self, $c ) = @_;
 
+    return  () unless $c;
     my $cvar = $self->config->{CATALYST_VAR};
 
     defined $cvar
@@ -288,7 +305,7 @@ something like this:
 
     use base 'Catalyst::View::TT';
 
-    __PACKAGE__->config->{DEBUG} = 'all';
+    __PACKAGE__->config(DEBUG => 'all');
 
 Now you can modify your action handlers in the main application and/or
 controllers to forward to your view class.  You might choose to do this
@@ -301,6 +318,38 @@ to the TT view class.
         my( $self, $c ) = @_;
         $c->forward( $c->view('TT') );
     }
+
+But if you are using the standard auto-generated end action, you don't even need
+to do this!
+
+    # in MyApp::Controller::Root
+    sub end : ActionClass('RenderView') {} # no need to change this line
+
+    # in MyApp.pm
+    __PACKAGE__->config(
+        ...
+        default_view => 'TT',
+    );
+
+This will Just Work.  And it has the advantages that:
+
+=over 4
+
+=item *
+
+If you want to use a different view for a given request, just set 
+<< $c->stash->{current_view} >>.  (See L<Catalyst>'s C<< $c->view >> method
+for details.
+
+=item *
+
+<< $c->res->redirect >> is handled by default.  If you just forward to 
+C<View::TT> in your C<end> routine, you could break this by sending additional
+content.
+
+=back
+
+See L<Catalyst::Action::RenderView> for more details.
 
 =head2 CONFIGURATION
 
@@ -477,15 +526,22 @@ See L<C<TIMER>> property of the L<config> method.
 The constructor for the TT view. Sets up the template provider,
 and reads the application config.
 
-=head2 process
+=head2 process($c)
 
 Renders the template specified in C<< $c->stash->{template} >> or
 C<< $c->action >> (the private name of the matched action).  Calls L<render> to
 perform actual rendering. Output is stored in C<< $c->response->body >>.
 
+It is possible to forward to the process method of a TT view from inside
+Catalyst like this:
+
+    $c->forward('View::TT');
+
+N.B. This is usually done automatically by L<Catalyst::Action::RenderView>.
+
 =head2 render($c, $template, \%args)
 
-Renders the given template and returns output, or a L<Template::Exception>
+Renders the given template and returns output. Throws a L<Template::Exception>
 object upon error.
 
 The template variables are set to C<%$args> if $args is a hashref, or
@@ -499,6 +555,30 @@ C<name> variables are omitted.
 C<$template> can be anything that Template::process understands how to
 process, including the name of a template file or a reference to a test string.
 See L<Template::process|Template/process> for a full list of supported formats.
+
+To use the render method outside of your Catalyst app, just pass a undef context.
+This can be useful for tests, for instance.
+
+It is possible to forward to the render method of a TT view from inside Catalyst
+to render page fragments like this:
+
+    my $fragment = $c->forward("View::TT", "render", $template_name, $c->stash->{fragment_data});
+
+=head3 Backwards compatibility note
+
+The render method used to just return the Template::Exception object, rather
+than just throwing it. This is now deprecated and instead the render method
+will throw an exception for new applications.
+
+This behaviour can be activated (and is activated in the default skeleton
+configuration) by using C<< render_die => 1 >>. If you rely on the legacy
+behaviour then a warning will be issued.
+
+To silence this warning, set C<< render_die => 0 >>, but it is recommended
+you adjust your code so that it works with C<< render_die => 1 >>.
+
+In a future release, C<< render_die => 1 >> will become the default if
+unspecified.
 
 =head2 template_vars
 
