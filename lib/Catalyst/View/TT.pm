@@ -1,21 +1,20 @@
 package Catalyst::View::TT;
-
-use strict;
-use warnings;
-
-use base qw/Catalyst::View/;
+use Moose;
 use Data::Dump 'dump';
 use Template;
 use Template::Timer;
 use MRO::Compat;
 use Scalar::Util qw/blessed/;
+use namespace::autoclean;
+
+extends 'Catalyst::View';
 
 our $VERSION = '0.33';
 
-__PACKAGE__->mk_accessors('template');
-__PACKAGE__->mk_accessors('include_path');
+has template => ( is => 'ro' );
+has include_path  => ( is => 'rw' );
 
-*paths = \&include_path;
+__PACKAGE__->meta->add_method('paths' => __PACKAGE__->meta->find_method_by_name('include_path'));
 
 =head1 NAME
 
@@ -25,7 +24,7 @@ Catalyst::View::TT - Template View Class
 
 # use the helper to create your View
 
-    myapp_create.pl view TT TT
+    myapp_create.pl view HTML TT
 
 # configure in lib/MyApp.pm (Could be set from configfile instead)
 
@@ -33,7 +32,7 @@ Catalyst::View::TT - Template View Class
         name         => 'MyApp',
         root         => MyApp->path_to('root'),
         default_view => 'TT',
-        'View::TT' => {
+        'View::HTML' => {
             # any TT configurations items go here
             INCLUDE_PATH => [
               MyApp->path_to( 'root', 'src' ),
@@ -86,14 +85,17 @@ sub _coerce_paths {
     return split( /$dlim/, $paths );
 }
 
-sub new {
-    my ( $class, $c, $arguments ) = @_;
-    my $config = {
-        EVAL_PERL          => 0,
-        TEMPLATE_EXTENSION => '',
-        %{ $class->config },
-        %{$arguments},
-    };
+#$class->merge_config_hashes( $class->config, $args );
+
+around BUILDARGS => sub {
+    my ( $orig, $class, $c, $arguments ) = @_;
+    my $config = $class->merge_config_hashes(
+        {
+            EVAL_PERL          => 0,
+            TEMPLATE_EXTENSION => '',
+        },
+        $class->$orig($c, $arguments)
+    );
     if ( ! (ref $config->{INCLUDE_PATH} eq 'ARRAY') ) {
         my $delim = $config->{DELIMITER};
         my @include_path
@@ -124,24 +126,6 @@ sub new {
     if ( $c->debug && $config->{DUMP_CONFIG} ) {
         $c->log->debug( "TT Config: ", dump($config) );
     }
-
-    my $self = $class->next::method(
-        $c, { %$config },
-    );
-
-    # Set base include paths. Local'd in render if needed
-    $self->include_path($config->{INCLUDE_PATH});
-
-    $self->config($config);
-
-    # Creation of template outside of call to new so that we can pass [ $self ]
-    # as INCLUDE_PATH config item, which then gets ->paths() called to get list
-    # of include paths to search for templates.
-
-    # Use a weakend copy of self so we dont have loops preventing GC from working
-    my $copy = $self;
-    Scalar::Util::weaken($copy);
-    $config->{INCLUDE_PATH} = [ sub { $copy->paths } ];
 
     if ( $config->{PROVIDERS} ) {
         my @providers = ();
@@ -188,7 +172,7 @@ sub new {
         }
     }
 
-    $self->{template} =
+    $config->{template} =
         Template->new($config) || do {
             my $error = Template->error();
             $c->log->error($error);
@@ -196,8 +180,24 @@ sub new {
             return undef;
         };
 
+    return $config;
+};
 
-    return $self;
+sub BUILD {
+    my ($self, $config) = @_;
+    # Set base include paths. Local'd in render if needed
+    $self->include_path($config->{INCLUDE_PATH});
+
+    $self->config($config);
+
+    # Creation of template outside of call to new so that we can pass [ $self ]
+    # as INCLUDE_PATH config item, which then gets ->paths() called to get list
+    # of include paths to search for templates.
+
+    # Use a weakend copy of self so we dont have loops preventing GC from working
+    my $copy = $self;
+    Scalar::Util::weaken($copy);
+    $config->{INCLUDE_PATH} = [ sub { $copy->paths } ];
 }
 
 sub process {
