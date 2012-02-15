@@ -453,6 +453,12 @@ If you are calling C<render> directly then you can specify dynamic paths by
 having a C<additional_template_paths> key with a value of additonal directories
 to search. See L<CAPTURING TEMPLATE OUTPUT> for an example showing this.
 
+=head2 Unicode
+
+Be sure to set C<< ENCODING => 'utf-8' >> and use
+L<Catalyst::Plugin::Unicode::Encoding> if you want to use non-ascii
+characters (encoded as utf-8) in your templates.
+
 =head2 RENDERING VIEWS
 
 The view plugin renders the template specified in the C<template>
