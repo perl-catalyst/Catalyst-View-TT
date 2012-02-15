@@ -33,18 +33,26 @@ Catalyst::View::TT - Template View Class
 
     __PACKAGE__->config(
         # any TT configuration items go here
-        INCLUDE_PATH => [
-          MyApp->path_to( 'root', 'src' ),
-          MyApp->path_to( 'root', 'lib' ),
-        ],
         TEMPLATE_EXTENSION => '.tt',
         CATALYST_VAR => 'c',
         TIMER        => 0,
+        ENCODING     => 'utf-8'
         # Not set by default
         PRE_PROCESS        => 'config/main',
         WRAPPER            => 'site/wrapper',
         render_die => 1, # Default for new apps, see render method docs
         expose_methods => [qw/method_in_view_class/],
+    );
+
+# add include path configuration in MyApp.pm
+
+    __PACKAGE__->config(
+        'View::Web' => {
+            INCLUDE_PATH => [
+                __PACKAGE__->path_to( 'root', 'src' ),
+                __PACKAGE__->path_to( 'root', 'lib' ),
+            ],
+        },
     );
 
 # render view from lib/MyApp.pm or lib/MyApp::Controller::SomeController.pm
