@@ -326,11 +326,9 @@ replacing C<MyApp> with the name of your application) which looks
 something like this:
 
     package FooBar::View::Web;
+    use Moose;
 
-    use strict;
-    use warnings;
-
-    use base 'Catalyst::View::TT';
+    extends 'Catalyst::View::TT';
 
     __PACKAGE__->config(DEBUG => 'all');
 
@@ -718,9 +716,8 @@ Allows you to specify a custom class to use as the template class instead of
 L<Template>.
 
     package MyApp::View::Web;
-
-    use strict;
-    use base 'Catalyst::View::TT';
+    use Moose;
+    extends 'Catalyst::View::TT';
 
     use Template::AutoFilter;
 
