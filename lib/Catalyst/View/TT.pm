@@ -377,22 +377,32 @@ first way is to call the C<config()> method in the view subclass.  This
 happens when the module is first loaded.
 
     package MyApp::View::Web;
-
-    use strict;
-    use base 'Catalyst::View::TT';
+    use Moose;
+    extends 'Catalyst::View::TT';
 
     __PACKAGE__->config({
-        INCLUDE_PATH => [
-            MyApp->path_to( 'root', 'templates', 'lib' ),
-            MyApp->path_to( 'root', 'templates', 'src' ),
-        ],
         PRE_PROCESS  => 'config/main',
         WRAPPER      => 'site/wrapper',
     });
 
 You may also override the configuration provided in the view class by adding
-a 'View::Web' section to your application config (either in the application
-main class, or in your configuration file). This should be reserved for
+a 'View::Web' section to your application config.
+
+This should generally be used to inject the include paths into the view to
+avoid the view trying to load the application to resolve paths.
+
+    .. inside MyApp.pm ..
+    __PACKAGE__->config(
+        'View::Web' => {
+            INCLUDE_PATH => [
+                __PACKAGE__->path_to( 'root', 'templates', 'lib' ),
+                __PACKAGE__->path_to( 'root', 'templates', 'src' ),
+            ],
+        },
+    );
+
+You can also configure your view from within your config file if you're
+using L<Catalyst::Plugin::ConfigLoader>. This should be reserved for
 deployment-specific concerns. For example:
 
     # MyApp_local.conf (Config::General format)
@@ -647,7 +657,7 @@ Would by default look for a template in <root>/test/test. If you set TEMPLATE_EX
 
 Allows you to specify the template providers that TT will use.
 
-    MyApp->config({
+    MyApp->config(
         name     => 'MyApp',
         root     => MyApp->path_to('root'),
         'View::Web' => {
@@ -664,7 +674,7 @@ Allows you to specify the template providers that TT will use.
                 }
             ]
         },
-    });
+    );
 
 The 'name' key should correspond to the class name of the provider you
 want to use.  The _file_ name is a special case that represents the default
