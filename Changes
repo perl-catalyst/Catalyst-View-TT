@@ -1,5 +1,6 @@
 Revision history for Perl extension Catalyst::View::TT.
 
+0.38   2012-02-15 20:42:00
         - Change documentation to reflect use of Moose.
         - Change documentation to highlight how to configure
           UTF-8 in templates.
