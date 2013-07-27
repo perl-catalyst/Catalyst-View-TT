@@ -30,7 +30,7 @@ Catalyst::View::TT - Template View Class
 
     myapp_create.pl view Web TT
 
-# add custom configration in View/Web.pm
+# add custom configuration in View/Web.pm
 
     __PACKAGE__->config(
         # any TT configuration items go here
@@ -147,7 +147,7 @@ sub new {
     # as INCLUDE_PATH config item, which then gets ->paths() called to get list
     # of include paths to search for templates.
 
-    # Use a weakend copy of self so we dont have loops preventing GC from working
+    # Use a weakened copy of self so we don't have loops preventing GC from working
     my $copy = $self;
     Scalar::Util::weaken($copy);
     $config->{INCLUDE_PATH} = [ sub { $copy->paths } ];
@@ -450,7 +450,7 @@ checking and the chance of a memory leak:
     @{ $c->view('Web')->include_path } = qw/path another_path/;
 
 If you are calling C<render> directly then you can specify dynamic paths by
-having a C<additional_template_paths> key with a value of additonal directories
+having a C<additional_template_paths> key with a value of additional directories
 to search. See L<CAPTURING TEMPLATE OUTPUT> for an example showing this.
 
 =head2 Unicode
@@ -669,7 +669,7 @@ output from your templates, such as:
 
 =head2 C<TEMPLATE_EXTENSION>
 
-a sufix to add when looking for templates bases on the C<match> method in L<Catalyst::Request>.
+a suffix to add when looking for templates bases on the C<match> method in L<Catalyst::Request>.
 
 For example:
 
