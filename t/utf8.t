@@ -2,7 +2,7 @@ use utf8;
 use warnings;
 use strict;
 use Test::More;
-use Encode 2.21 'decode_utf8', 'encode_utf8';
+use Encode 2.21 'decode_utf8';
 use File::Spec;
 
 {
