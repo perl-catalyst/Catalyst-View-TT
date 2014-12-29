@@ -3,7 +3,6 @@ use warnings;
 use strict;
 use Test::More;
 use Encode 2.21 'decode_utf8', 'encode_utf8';
-use HTTP::Request::Common;
 use File::Spec;
 
 {
@@ -35,10 +34,8 @@ use File::Spec;
 use Catalyst::Test 'MyApp';
 
 if(MyApp->can('encoding') and MyApp->can('clear_encoding') ) {
-  ok my $res = request GET '/root/♥', 'Accept-Encoding' => 'gzip';
-
+  ok my $res = request '/root/♥';
   is $res->code, 200, 'OK';
-  
   is decode_utf8($res->content), "<p>This heart literal ♥</p><p>This is heart var ♥♥♥</p>\n", 'correct body';
   is $res->content_charset, 'UTF-8';
 } else {
