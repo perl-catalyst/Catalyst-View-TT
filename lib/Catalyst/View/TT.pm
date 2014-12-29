@@ -10,7 +10,7 @@ use Template::Timer;
 use MRO::Compat;
 use Scalar::Util qw/blessed weaken/;
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 $VERSION = eval $VERSION;
 
 __PACKAGE__->mk_accessors('template');
@@ -230,7 +230,7 @@ sub process {
     }
 
     unless ( $c->response->content_type ) {
-        my $default = $self->content_type || 'text/html; charset=utf-8';
+        my $default = $self->content_type || 'text/html; charset=UTF-8';
         $c->response->content_type($default);
     }
 
@@ -454,6 +454,10 @@ having a C<additional_template_paths> key with a value of additional directories
 to search. See L<CAPTURING TEMPLATE OUTPUT> for an example showing this.
 
 =head2 Unicode
+
+B<NOTE> Starting with L<Catalyst> v5.90080 unicode and encoding has been
+baked into core, and the default encoding is UTF-8.  The following advice
+is for older versions of L<Catalyst>
 
 Be sure to set C<< ENCODING => 'utf-8' >> and use
 L<Catalyst::Plugin::Unicode::Encoding> if you want to use non-ascii
