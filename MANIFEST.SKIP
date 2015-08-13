@@ -1,1 +1,0 @@
-^(?!lib/.*\.pm$|lib/.*\.pod$|t/.*\.t$|t/lib/|t/root/|xt/.*\.t$|xt/lib/.*\.pm$|(?^:[^/]*\.PL)$|(?^:Changes|MANIFEST|README|LICENSE|META\.yml)$|maint/(?^:[^.].*)$)
