@@ -451,7 +451,7 @@ checking and the chance of a memory leak:
 
 If you are calling C<render> directly then you can specify dynamic paths by
 having a C<additional_template_paths> key with a value of additional directories
-to search. See L<CAPTURING TEMPLATE OUTPUT> for an example showing this.
+to search. See L</CAPTURING TEMPLATE OUTPUT> for an example showing this.
 
 =head2 Unicode (pre Catalyst v5.90080)
 
@@ -541,7 +541,7 @@ other views, such as L<Catalyst::View::Email::Template>.
 
 =head2 TEMPLATE PROFILING
 
-See L<C<TIMER>> property of the L<config> method.
+See L</C<TIMER>> property of the L</config> method.
 
 =head2 METHODS
 
@@ -553,7 +553,7 @@ and reads the application config.
 =head2 process($c)
 
 Renders the template specified in C<< $c->stash->{template} >> or
-C<< $c->action >> (the private name of the matched action).  Calls L<render> to
+C<< $c->action >> (the private name of the matched action).  Calls L</render> to
 perform actual rendering. Output is stored in C<< $c->response->body >>.
 
 It is possible to forward to the process method of a TT view from inside
@@ -563,7 +563,7 @@ Catalyst like this:
 
 N.B. This is usually done automatically by L<Catalyst::Action::RenderView>.
 
-=head2 render($c, $template, \%args)
+=head2 X<render>render($c, $template, \%args)
 
 Renders the given template and returns output. Throws a L<Template::Exception>
 object upon error.
