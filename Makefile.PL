@@ -4,7 +4,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 ExtUtils::MakeMaker->VERSION('7.00') unless -f 'META.yml';
-(do 'maint/Makefile.PL.include' or die $@) unless -f 'META.yml';
+(do './maint/Makefile.PL.include' or die $@) unless -f 'META.yml';
 
 my %WriteMakefileArgs = (
     NAME => 'Catalyst::View::TT',
