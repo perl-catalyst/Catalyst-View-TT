@@ -11,7 +11,7 @@ use MRO::Compat;
 use Scalar::Util qw/blessed weaken/;
 
 our $VERSION = '0.45';
-$VERSION = eval $VERSION;
+$VERSION =~ tr/_//d;
 
 __PACKAGE__->mk_accessors('template');
 __PACKAGE__->mk_accessors('expose_methods');

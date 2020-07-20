@@ -4,7 +4,7 @@ use strict;
 use File::Spec;
 
 our $VERSION = '0.45';
-$VERSION = eval $VERSION;
+$VERSION =~ tr/_//d;
 
 sub mk_compclass {
     my ( $self, $helper, @args ) = @_;
