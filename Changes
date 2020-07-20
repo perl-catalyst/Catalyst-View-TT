@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::View::TT.
 
+        - specify correct Test::More prereq
+        - correct links in POD (PR#3)
+
 0.44 - 2015-10-05
         - declare missing prereq on Data::Dump
 
