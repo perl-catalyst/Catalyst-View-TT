@@ -543,7 +543,7 @@ other views, such as L<Catalyst::View::Email::Template>.
 
 See L</C<TIMER>> property of the L</config> method.
 
-=head2 METHODS
+=head1 METHODS
 
 =head2 new
 
