@@ -1,5 +1,6 @@
 Revision history for Perl extension Catalyst::View::TT.
 
+0.45 - 2020-07-22
         - specify correct Test::More prereq
         - correct links in POD (PR#3)
         - silence warnings in tests
