@@ -20,4 +20,8 @@ ok( $response = request("/test?view=ExposeMethods&template=exposed_method_fails.
 $TestApp::Log->contains_ok(qr/no param passed/);
 $TestApp::Log->clear;
 
+ok( $response = request("/test?view=ExposeMethods&template=other_exposed_method_dies.tt")->is_error, 'request fails');
+
+$TestApp::Log->contains_ok(qr/ouch that was unexpected/);
+
 done_testing;
