@@ -13,4 +13,11 @@ is($response->content, "magic added param", 'message ok');
 ok(($response = request("/test?view=ExposeMethodsSubclassed&template=expose_methods.tt"))->is_success, 'request ok');
 is($response->content, "magic added param", 'message ok');
 
+$TestApp::Log->empty_ok('no logged errors');
+
+ok( $response = request("/test?view=ExposeMethods&template=exposed_method_fails.tt")->is_error, 'request fails');
+
+$TestApp::Log->contains_ok(qr/no param passed/);
+$TestApp::Log->clear;
+
 done_testing;
