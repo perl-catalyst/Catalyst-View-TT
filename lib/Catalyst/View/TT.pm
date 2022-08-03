@@ -298,7 +298,19 @@ sub template_vars {
             my $weak_ctx = $c;
             weaken $weak_ctx;
             my $sub = sub {
-                $self->$method_body($weak_ctx, @_);
+                my @args = @_;
+                my $ret;
+                eval {
+                    $ret = $self->$method_body($weak_ctx, @args);
+                };
+                if ($@) {
+                    if (blessed($@)) {
+                        die $@;
+                    } else {
+                        Catalyst::Exception->throw($@);
+                    }
+                }
+                return $ret;
             };
             $vars{$method_name} = $sub;
         }
