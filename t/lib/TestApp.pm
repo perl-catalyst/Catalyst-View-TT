@@ -5,9 +5,9 @@ use warnings;
 
 use Catalyst; # qw/-Debug/;
 use Path::Class;
-use Test::Log::Dispatch;
+use TestLogger;
 
-our $Log = Test::Log::Dispatch->new;
+our $Log = TestLogger->new;
 
 our $VERSION = '0.01';
 

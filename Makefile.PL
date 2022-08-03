@@ -25,7 +25,7 @@ my %WriteMakefileArgs = (
     TEST_REQUIRES => {
         'Test::More'        => '0.88',
         'File::Spec'        => '0',
-        'Test::Log::Dispatch' => '0.03',
+        'List::Util'        => '1.33',
     },
 
     META_MERGE => {
