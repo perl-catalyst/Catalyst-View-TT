@@ -10,7 +10,7 @@ use Template::Timer;
 use MRO::Compat;
 use Scalar::Util qw/blessed weaken/;
 
-our $VERSION = '0.45';
+our $VERSION = '0.46';
 $VERSION =~ tr/_//d;
 
 __PACKAGE__->mk_accessors('template');
