@@ -9,7 +9,6 @@ use Template;
 use Template::Timer;
 use MRO::Compat;
 use Scalar::Util qw/blessed weaken/;
-use Try::Tiny;
 
 our $VERSION = '0.45';
 $VERSION =~ tr/_//d;
@@ -300,16 +299,18 @@ sub template_vars {
             weaken $weak_ctx;
             my $sub = sub {
                 my @args = @_;
-                try {
-                    $self->$method_body($weak_ctx, @args);
-                }
-                catch {
-                    if (blessed($_)) {
-                        die $_;
-                    } else {
-                        Catalyst::Exception->throw($_);
-                    }
+                my $ret;
+                eval {
+                    $ret = $self->$method_body($weak_ctx, @args);
                 };
+                if ($@) {
+                    if (blessed($@)) {
+                        die $@;
+                    } else {
+                        Catalyst::Exception->throw($@);
+                    }
+                }
+                return $ret;
             };
             $vars{$method_name} = $sub;
         }

@@ -20,7 +20,6 @@ my %WriteMakefileArgs = (
         'Path::Class'       => 0,
         'MRO::Compat'       => 0,
         'Data::Dump'        => 0,
-        'Try::Tiny'         => 0,
     },
     TEST_REQUIRES => {
         'Test::More'        => '0.88',
